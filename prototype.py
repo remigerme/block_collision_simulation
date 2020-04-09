@@ -25,6 +25,7 @@ FPS = 240 # it will compute 240 times per second the position of the blocks
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
 
 
 class Wall:
@@ -56,7 +57,7 @@ class Block:
 	This class allows us to simply create and manage blocks.
 	"""
 	ID = 0
-	def __init__(self, mass, x, vx):
+	def __init__(self, mass, x, vx, color = WHITE):
 		self.id = Block.ID
 		Block.ID += 1
 		self.mass = mass
@@ -65,9 +66,10 @@ class Block:
 		self.y = APP_HEIGHT - self.size
 		self.vx = vx
 		self.dt = 1 / FPS
+		self.color = color
 		self.rect = pygame.Rect((self.x, self.y), (self.size, self.size))
 		self.img = pygame.Surface((self.size, self.size))
-		self.img.fill(WHITE)
+		self.img.fill(self.color)
 
 	def compute_size(self):
 		size = 10 + math.log(self.mass) * 2
@@ -107,7 +109,7 @@ def draw(app, bg, walls, blocks, more_info, myfont):
 		text_time = myfont.render("Time : {}s".format(round(more_info["simulation_time"], 2)), False, WHITE)
 		app.blit(text_collision, (20, 40))
 		app.blit(text_time, (20, 70))
-		text_block1 = myfont.render("Block #1 : {}m and {}m/s".format(int(blocks[0].x),int(blocks[0].vx)), False, WHITE)
+		text_block1 = myfont.render("Block #1 : {}m and {}m/s".format(int(blocks[0].x),int(blocks[0].vx)), False, blocks[0].color)
 		app.blit(text_block1, (20, 100))
 
 
