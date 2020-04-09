@@ -1,6 +1,6 @@
 """
 First prototype of the project.
-We have two blocs :
+We have one or two blocs :
 	- that are square (no matter their shape in this prototype)
 	- whose the mass, the initial velocity and position are given (no acceleration)
 	- moving along the same and unique horizontal axis
@@ -9,6 +9,22 @@ We have two blocs :
 
 We can :
 	- activate / desactivate the side walls
-	- make the two blocs collide each other, and know what their velocity will be
+	- make the two blocs collide each other, and know what their velocity and position will be
 	- obviously count the number of collisions between the blocks, if only the left side wall is enabled
 """
+
+
+class Block:
+	"""
+	This class allows us to simply create and manage blocks.
+	"""
+	def __init__(self):
+		print("Block created !")
+
+
+def main():
+	pass
+
+
+if __name__ == "__main__":
+	main()
