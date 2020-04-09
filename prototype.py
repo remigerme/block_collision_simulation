@@ -83,6 +83,15 @@ class Block:
 		return False
 
 
+def evolve(walls, blocks):
+	for wall in walls:
+		checked_collisions = []
+		for block in blocks:
+			block.move()
+			if wall.collide(block):
+				block.vx = -block.vx
+
+
 def draw(app, bg, walls, blocks):
 	app.blit(bg, (0, 0))
 	for wall in walls:
@@ -97,8 +106,11 @@ def main():
 	clock = pygame.time.Clock()
 	bg = pygame.Surface((APP_WIDTH, APP_HEIGHT))
 	bg.fill(BLACK)
-	walls = []
-	blocks = []
+	default_wall_width = 10
+	default_wall_height = 50
+	walls = [Wall((0, APP_HEIGHT - default_wall_height), (default_wall_width, default_wall_height)),
+			Wall((APP_WIDTH - default_wall_width, APP_HEIGHT - default_wall_height), (default_wall_width, default_wall_height))]
+	blocks = [Block(10, 600, -15)]
 	run = True
 	while run:
 		for event in pygame.event.get():
@@ -106,6 +118,7 @@ def main():
 				run = False
 				pygame.quit()
 				quit()
+		evolve(walls, blocks)
 		draw(app, bg, walls, blocks)
 		clock.tick(FPS)
 		pygame.display.update()
