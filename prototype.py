@@ -84,7 +84,21 @@ class Block:
 
 
 def main():
-	pass
+	pygame.init()
+	app = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
+	clock = pygame.time.Clock()
+	bg = pygame.Surface((APP_WIDTH, APP_HEIGHT))
+	bg.fill(BLACK)
+	walls = []
+	blocks = []
+	run = True
+	while run:
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				run = False
+				pygame.quit()
+		clock.tick(FPS)
+		pygame.display.update()
 
 
 if __name__ == "__main__":
