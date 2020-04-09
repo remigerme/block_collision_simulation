@@ -17,6 +17,10 @@ We can :
 import math
 import pygame
 
+
+APP_WIDTH = 700
+APP_HEIGHT = 300
+
 FPS = 240 # it will compute 240 times per second the position of the blocks
 
 BLACK = (0, 0, 0)
@@ -51,8 +55,32 @@ class Block:
 	"""
 	This class allows us to simply create and manage blocks.
 	"""
-	def __init__(self):
-		print("Block created !")
+	ID = 0
+	def __init__(self, mass, x, vx):
+		self.id = Block.ID
+		Block.ID += 1
+		self.mass = mass
+		self.size = self.compute_size()
+		self.x = x
+		self.y = APP_HEIGHT - self.size
+		self.vx = vx
+		self.dt = 0.1 * (60 / FPS)
+		self.rect = pygame.Rect((self.x, self.y), (self.size, self.size))
+		self.img = pygame.Surface((self.size, self.size))
+		self.img.fill(WHITE)
+
+	def compute_size(self):
+		size = 10 + math.log(self.mass) * 2
+		return size
+
+	def move(self):
+		self.x += self.vx * self.dt
+		self.rect = pygame.Rect((self.x, self.y), (self.size, self.size))
+
+	def collide(self, block):
+		if self.x <= block.x <= self.x + self.size or self.x <= block.x + block.size <= self.x + self.size:
+			return True
+		return False
 
 
 def main():
