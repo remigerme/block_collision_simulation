@@ -83,6 +83,14 @@ class Block:
 		return False
 
 
+def draw(app, bg, walls, blocks):
+	app.blit(bg, (0, 0))
+	for wall in walls:
+		app.blit(wall.img, wall.rect)
+	for block in blocks:
+		app.blit(block.img, block.rect)
+
+
 def main():
 	pygame.init()
 	app = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
@@ -97,6 +105,7 @@ def main():
 			if event.type == pygame.QUIT:
 				run = False
 				pygame.quit()
+		draw(app, bg, walls, blocks)
 		clock.tick(FPS)
 		pygame.display.update()
 
