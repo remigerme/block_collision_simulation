@@ -101,12 +101,14 @@ def draw(app, bg, walls, blocks, more_info, myfont):
 		app.blit(wall.img, wall.rect)
 	for block in blocks:
 		app.blit(block.img, block.rect)
-	app.blit(more_info["text_toggle"], (20, 10))
+	app.blit(more_info["text_info"], (20, 10))
 	if more_info["status"]:
 		text_collision = myfont.render("Collision counter : {}".format(more_info["collision_counter"]), False, WHITE)
 		text_time = myfont.render("Time : {}s".format(round(more_info["simulation_time"], 2)), False, WHITE)
 		app.blit(text_collision, (20, 40))
 		app.blit(text_time, (20, 70))
+		text_block1 = myfont.render("Block #1 : {}m and {}m/s".format(int(blocks[0].x),int(blocks[0].vx)), False, WHITE)
+		app.blit(text_block1, (20, 100))
 
 
 def main():
@@ -114,7 +116,7 @@ def main():
 	pygame.font.init()
 
 	myfont = pygame.font.SysFont("dejavusans", 20)
-	text_toggle = myfont.render("Press i to toggle further information display", False, WHITE)
+	text_info = myfont.render("Press escape to quit, space to pause and i for more information", False, WHITE)
 
 	app = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
 	clock = pygame.time.Clock()
@@ -132,8 +134,9 @@ def main():
 				"status": True,
 				"simulation_time": simulation_time,
 				"collision_counter":collision_counter,
-				"text_toggle": text_toggle
+				"text_info": text_info
 				}
+	paused = False
 	run = True
 	while run:
 		for event in pygame.event.get():
@@ -142,15 +145,23 @@ def main():
 				pygame.quit()
 				quit()
 			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE:
+					run = False
+					pygame.quit()
+					quit()
+				if event.key == pygame.K_SPACE:
+					paused = not paused
 				if event.key == pygame.K_i:
 					more_info["status"] = not more_info["status"]
-		simulation_time += 1 / FPS
-		collision_counter += evolve(walls, blocks)
-		more_info["simulation_time"] = simulation_time
-		more_info["collision_counter"] = collision_counter
-		draw(app, bg, walls, blocks, more_info, myfont)
-		clock.tick(FPS)
-		pygame.display.update()
+
+		if not paused:
+			simulation_time += 1 / FPS
+			collision_counter += evolve(walls, blocks)
+			more_info["simulation_time"] = simulation_time
+			more_info["collision_counter"] = collision_counter
+			draw(app, bg, walls, blocks, more_info, myfont)
+			clock.tick(FPS)
+			pygame.display.update()
 
 
 if __name__ == "__main__":
