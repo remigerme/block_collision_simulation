@@ -46,7 +46,7 @@ class Wall:
 			if self.x <= block.x + block.size <= self.x + self.thickness:
 				return True
 		else:
-			if self.x <= block.x <= self.x + self.thickness
+			if self.x <= block.x <= self.x + self.thickness:
 				return True
 		return False
 
@@ -105,6 +105,7 @@ def main():
 			if event.type == pygame.QUIT:
 				run = False
 				pygame.quit()
+				quit()
 		draw(app, bg, walls, blocks)
 		clock.tick(FPS)
 		pygame.display.update()
