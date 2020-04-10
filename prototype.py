@@ -21,7 +21,7 @@ import pygame
 APP_WIDTH = 700
 APP_HEIGHT = 300
 
-FPS = 240 # it will compute 240 times per second the position of the blocks
+FPS = 480 # it will compute 240 times per second the position of the blocks
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -100,6 +100,13 @@ def assign_new_velocity(a, b):
     v_rb1 = (1 - 2 * m / (M + m)) * v_b0 + v_ra0
     a.vx = v_ra1
     b.vx = v_rb1
+    print("m : {}".format(m))
+    print("M : {}".format(M))
+    print("vra0 : {}".format(v_ra0))
+    print("v_rb0 : {}".format(v_rb0))
+    print("v_b0 : {}".format(v_b0))
+    print("v_ra1 : {}".format(v_ra1))
+    print("v_rb1 : {}".format(v_rb1))
 
 
 def evolve(walls, blocks):
@@ -113,16 +120,22 @@ def evolve(walls, blocks):
                     collisions += 1
                     block.vx = -block.vx
         for other_block in blocks:
-            if block.id <= other_block.id:
-                a_block = block
-                b_block = other_block
+            if block.x <= other_block.x:
+                a = block
+                b = other_block
             else:
-                a_block = other_block
-                b_block = block
-            id_collision = (a_block, b_block)
-            if other_block != block and id_collision not in checked_collisions and block.collide(other_block):
+                a = other_block
+                b = block
+            id_collision = (min(a.id, b.id), max(a.id, b.id))
+            # due to some technical limits, we need to check if the collision is realistic
+            # if we don't check, right after the blocks collide they will collide infinitely
+            # if you don't understand just don't care, but keep in mind it's necessary to check
+            collision_possible = False
+            if a.vx > b.vx: # in the three possible collision types (-> -> / -> <- / <- <-) a's velocity is bigger than b's one
+                collision_possible = True
+            if other_block != block and id_collision not in checked_collisions and block.collide(other_block) and collision_possible:
                 collisions += 1
-                assign_new_velocity(a_block, b_block)
+                assign_new_velocity(a, b)
                 checked_collisions.append(id_collision)
     return collisions
 
@@ -160,7 +173,7 @@ def main():
     default_wall_height = 50
     walls = [Wall((0, APP_HEIGHT - default_wall_height), (default_wall_width, default_wall_height)),
             Wall((APP_WIDTH - default_wall_width, APP_HEIGHT - default_wall_height), (default_wall_width, default_wall_height))]
-    blocks = [Block(10, 600, -100)]
+    blocks = [Block(50, 600, -50), Block(10, 300, 0, GREEN)]
 
     simulation_time = 0
     collision_counter = 0
