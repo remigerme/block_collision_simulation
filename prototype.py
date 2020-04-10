@@ -86,6 +86,22 @@ class Block:
         return False
 
 
+def assign_new_velocity(a, b):
+    """
+    This is the most important function of the prototype, this is here that we use dynamics.
+    If you want to see the proof of these formulas, check the readme.
+    """
+    m = a.mass
+    M = b.mass
+    v_ra0 = a.vx
+    v_rb0 = b.vx
+    v_b0 = v_rb0 - v_ra0
+    v_ra1 = 2 * M / (M + m) * v_b0 + v_ra0
+    v_rb1 = (1 - 2 * m / (M + m)) * v_b0 + v_ra0
+    a.vx = v_ra1
+    b.vx = v_rb1
+
+
 def evolve(walls, blocks):
     collisions = 0
     checked_collisions = []
@@ -96,6 +112,18 @@ def evolve(walls, blocks):
                 if wall.collide(block):
                     collisions += 1
                     block.vx = -block.vx
+        for other_block in blocks:
+            if block.id <= other_block.id:
+                a_block = block
+                b_block = other_block
+            else:
+                a_block = other_block
+                b_block = block
+            id_collision = (a_block, b_block)
+            if other_block != block and id_collision not in checked_collisions and block.collide(other_block):
+                collisions += 1
+                assign_new_velocity(a_block, b_block)
+                checked_collisions.append(id_collision)
     return collisions
 
 
