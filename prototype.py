@@ -21,7 +21,7 @@ import pygame
 APP_WIDTH = 700
 APP_HEIGHT = 300
 
-FPS = 480 # it will compute 240 times per second the position of the blocks
+FPS = 960 # it will compute 240 times per second the position of the blocks
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -100,13 +100,6 @@ def assign_new_velocity(a, b):
     v_rb1 = (1 - 2 * m / (M + m)) * v_b0 + v_ra0
     a.vx = v_ra1
     b.vx = v_rb1
-    print("m : {}".format(m))
-    print("M : {}".format(M))
-    print("vra0 : {}".format(v_ra0))
-    print("v_rb0 : {}".format(v_rb0))
-    print("v_b0 : {}".format(v_b0))
-    print("v_ra1 : {}".format(v_ra1))
-    print("v_rb1 : {}".format(v_rb1))
 
 
 def evolve(walls, blocks):
@@ -149,7 +142,7 @@ def draw(app, bg, walls, blocks, more_info, myfont):
         app.blit(block.img, block.rect)
     app.blit(more_info["text_info"], (20, 10))
     if more_info["status"]:
-        text_collision = myfont.render("Collision counter : {}".format(more_info["collision_counter"]), False, WHITE)
+        text_collision = myfont.render("Collisions counter : {}".format(more_info["collisions_counter"]), False, WHITE)
         text_time = myfont.render("Time : {}s".format(round(more_info["simulation_time"], 2)), False, WHITE)
         app.blit(text_collision, (20, 40))
         app.blit(text_time, (20, 70))
@@ -163,7 +156,7 @@ def main():
     pygame.font.init()
 
     myfont = pygame.font.SysFont("dejavusans", 20)
-    text_info = myfont.render("Escape : quit, space : paused, i : info, u / o : left / right wall", False, WHITE)
+    text_info = myfont.render("Escape : quit, space : paused, i : info, u / o : walls, s : sound", False, WHITE)
 
     app = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
     clock = pygame.time.Clock()
@@ -173,14 +166,14 @@ def main():
     default_wall_height = 50
     walls = [Wall((0, APP_HEIGHT - default_wall_height), (default_wall_width, default_wall_height)),
             Wall((APP_WIDTH - default_wall_width, APP_HEIGHT - default_wall_height), (default_wall_width, default_wall_height))]
-    blocks = [Block(50, 600, -50), Block(10, 300, 0, GREEN)]
+    blocks = [Block(1000000, 50, -1), Block(1, 40, 0, GREEN)]
 
     simulation_time = 0
-    collision_counter = 0
+    collisions_counter = 0
     more_info = {
                 "status": True,
                 "simulation_time": simulation_time,
-                "collision_counter":collision_counter,
+                "collisions_counter":collisions_counter,
                 "text_info": text_info
                 }
     paused = False
@@ -207,9 +200,9 @@ def main():
 
         if not paused:
             simulation_time += 1 / FPS
-            collision_counter += evolve(walls, blocks)
+            collisions_counter += evolve(walls, blocks)
             more_info["simulation_time"] = simulation_time
-            more_info["collision_counter"] = collision_counter
+            more_info["collisions_counter"] = collisions_counter
             draw(app, bg, walls, blocks, more_info, myfont)
             clock.tick(FPS)
             pygame.display.update()
