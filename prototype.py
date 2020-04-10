@@ -21,7 +21,7 @@ import pygame
 APP_WIDTH = 700
 APP_HEIGHT = 300
 
-FPS = 960 # it will compute 240 times per second the position of the blocks
+FPS = 960
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -147,7 +147,7 @@ def draw(app, bg, walls, blocks, more_info, myfont):
         app.blit(text_collision, (20, 40))
         app.blit(text_time, (20, 70))
         for i, block in enumerate(blocks):
-            text_block = myfont.render("Block #{} : {}m and {}m/s".format(i + 1, int(block.x),int(block.vx)), False, block.color)
+            text_block = myfont.render("Block #{} : {}m and {}m/s".format(i + 1, int(block.x),round(block.vx, 2)), False, block.color)
             app.blit(text_block, (20, 70 + 30 * (i + 1)))
 
 
@@ -156,7 +156,7 @@ def main():
     pygame.font.init()
 
     myfont = pygame.font.SysFont("dejavusans", 20)
-    text_info = myfont.render("Escape : quit, space : paused, i : info, u / o : walls, s : sound", False, WHITE)
+    text_info = myfont.render("Escape : quit, space : paused, i : info, u / o : left/right walls", False, WHITE)
 
     app = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
     clock = pygame.time.Clock()
@@ -166,7 +166,7 @@ def main():
     default_wall_height = 50
     walls = [Wall((0, APP_HEIGHT - default_wall_height), (default_wall_width, default_wall_height)),
             Wall((APP_WIDTH - default_wall_width, APP_HEIGHT - default_wall_height), (default_wall_width, default_wall_height))]
-    blocks = [Block(1000000, 50, -1), Block(1, 40, 0, GREEN)]
+    blocks = [Block(100, 200, -30), Block(1, 100, 0, GREEN)]
 
     simulation_time = 0
     collisions_counter = 0
