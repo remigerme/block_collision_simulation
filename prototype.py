@@ -21,7 +21,7 @@ import pygame
 APP_WIDTH = 700
 APP_HEIGHT = 300
 
-FPS = 960
+FPS = 120 # higher FPS makes the program crashes
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -61,12 +61,16 @@ class Block:
     def __init__(self, mass, x, vx, color = WHITE):
         self.id = Block.ID
         Block.ID += 1
+
         self.mass = mass
         self.size = self.compute_size()
+
+        self.distance_traveled = 0
         self.x = x
         self.y = APP_HEIGHT - self.size
         self.vx = vx
         self.dt = 1 / FPS
+        
         self.color = color
         self.rect = pygame.Rect((self.x, self.y), (self.size, self.size))
         self.img = pygame.Surface((self.size, self.size))
@@ -78,6 +82,7 @@ class Block:
 
     def move(self):
         self.x += self.vx * self.dt
+        self.distance_traveled += abs(self.vx * self.dt)
         self.rect = pygame.Rect((self.x, self.y), (self.size, self.size))
 
     def collide(self, block):
