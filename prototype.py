@@ -155,19 +155,19 @@ def main():
     pygame.init()
     pygame.font.init()
 
-    myfont = pygame.font.SysFont("dejavusans", 20)
-    text_info = myfont.render("Escape : quit, space : paused, i : info, u / o : left/right walls", False, WHITE)
-
     app = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
     clock = pygame.time.Clock()
     bg = pygame.Surface((APP_WIDTH, APP_HEIGHT))
     bg.fill(BLACK)
-    default_wall_width = 10
-    default_wall_height = 50
-    walls = [Wall((0, APP_HEIGHT - default_wall_height), (default_wall_width, default_wall_height)),
-            Wall((APP_WIDTH - default_wall_width, APP_HEIGHT - default_wall_height), (default_wall_width, default_wall_height))]
-    blocks = [Block(100, 200, -30), Block(1, 100, 0, GREEN)]
 
+    wall_width = 10
+    wall_height = 50
+    walls = [Wall((0, APP_HEIGHT - wall_height), (wall_width, wall_height)),
+            Wall((APP_WIDTH - wall_width, APP_HEIGHT - wall_height), (wall_width, wall_height))]
+    blocks = [Block(100, 200, -30), Block(1, 100, 0, GREEN)]
+    
+    myfont = pygame.font.SysFont("dejavusans", 20)
+    text_info = myfont.render("Escape : quit, space : paused, i : info, u / o : left/right walls", False, WHITE)
     simulation_time = 0
     collisions_counter = 0
     more_info = {
@@ -176,6 +176,7 @@ def main():
                 "collisions_counter":collisions_counter,
                 "text_info": text_info
                 }
+
     paused = False
     run = True
     while run:
