@@ -33,6 +33,7 @@ class Wall:
     This class allows us to create walls, with which blocks will interact.
     """
     def __init__(self, pos, size):
+        self.status = True
         self.x = pos[0]
         self.y = pos[1]
         self.thickness = size[0]
@@ -91,16 +92,18 @@ def evolve(walls, blocks):
     for block in blocks:
         block.move()
         for wall in walls:
-            if wall.collide(block):
-                collisions += 1
-                block.vx = -block.vx
+            if wall.status:
+                if wall.collide(block):
+                    collisions += 1
+                    block.vx = -block.vx
     return collisions
 
 
 def draw(app, bg, walls, blocks, more_info, myfont):
     app.blit(bg, (0, 0))
     for wall in walls:
-        app.blit(wall.img, wall.rect)
+        if wall.status:
+            app.blit(wall.img, wall.rect)
     for block in blocks:
         app.blit(block.img, block.rect)
     app.blit(more_info["text_info"], (20, 10))
@@ -119,7 +122,7 @@ def main():
     pygame.font.init()
 
     myfont = pygame.font.SysFont("dejavusans", 20)
-    text_info = myfont.render("Press escape to quit, space to pause and i for more information", False, WHITE)
+    text_info = myfont.render("Escape : quit, space : paused, i : info, u / o : left / right wall", False, WHITE)
 
     app = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
     clock = pygame.time.Clock()
@@ -156,6 +159,10 @@ def main():
                     paused = not paused
                 if event.key == pygame.K_i:
                     more_info["status"] = not more_info["status"]
+                if event.key == pygame.K_u:
+                    walls[0].status = not walls[0].status
+                if event.key == pygame.K_o:
+                    walls[1].status = not walls[1].status
 
         if not paused:
             simulation_time += 1 / FPS
