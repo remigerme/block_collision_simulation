@@ -4,8 +4,7 @@ We have one or two blocs :
     - that are square (no matter their shape in this prototype)
     - whose the mass, the initial velocity and position are given (no acceleration)
     - moving along the same and unique horizontal axis
-    - there is no loss of energy when blocks collide together or with a wall
-    - there can be friction with the ground only (not air)
+    - there is no loss of energy (and no friction either) when blocks collide together or with a wall
 
 We can :
     - activate / desactivate the side walls
@@ -80,7 +79,7 @@ class Block:
 
     def move(self, time_speed_modifier):
         self.x += self.vx * self.dt * time_speed_modifier
-        self.distance_traveled += abs(self.vx * self.dt)
+        self.distance_traveled += abs(self.vx * self.dt * time_speed_modifier)
         self.rect = pygame.Rect((self.x, self.y), (self.size, self.size))
 
     def collide(self, block):
@@ -104,7 +103,7 @@ class Simulation:
                     ]
         self.blocks = [
                     Block(1, 100, 0, self.FPS, self.APP_HEIGHT), # can change all parameters ofc
-                    Block(100, 200, -30, self.FPS, self.APP_HEIGHT, color = GREEN)
+                    Block(10000, 200, -30, self.FPS, self.APP_HEIGHT, color = GREEN)
                     ]
 
         # more information
@@ -145,10 +144,16 @@ class Simulation:
                         self.walls[0].status = not self.walls[0].status
                     if event.key == pygame.K_o:
                         self.walls[1].status = not self.walls[1].status
-                    if event.key == pygame.K_LEFT and self.time_speed_modifier > 0.1:
-                        self.time_speed_modifier -= 0.1
+                    if event.key == pygame.K_LEFT:
+                        if 0.01 < self.time_speed_modifier <= 0.10:
+                            self.time_speed_modifier = round(self.time_speed_modifier - 0.01, 3)
+                        elif self.time_speed_modifier > 0.10:
+                            self.time_speed_modifier = round(self.time_speed_modifier - 0.10, 3)
                     if event.key == pygame.K_RIGHT:
-                        self.time_speed_modifier += 0.1
+                        if self.time_speed_modifier < 0.10:
+                            self.time_speed_modifier = round(self.time_speed_modifier + 0.01, 3)
+                        else:
+                            self.time_speed_modifier = round(self.time_speed_modifier + 0.10, 3)
 
             if not self.is_paused:
                 self.simulation_time += 1 / self.FPS * self.time_speed_modifier
@@ -160,14 +165,16 @@ class Simulation:
     def evolve(self):
         collisions = 0
         checked_collisions = []
-        for a in self.blocks:
-            a.move(self.time_speed_modifier)
+        for block in self.blocks:
+            collide = False
             for wall in self.walls:
                 if wall.status:
-                    if wall.collide(a):
+                    if wall.collide(block):
                         collisions += 1
-                        a.vx *= -1
-            for b in self.blocks:
+                        block.vx *= -1
+            for other_block in self.blocks:
+                a = block
+                b = other_block # see in a future update
                 id_collision = (min(a.id, b.id), max(a.id, b.id))
                 # due to some technical limits, we need to check if the collision is realistic
                 # if we don't check, right after the blocks collide they will collide infinitely
@@ -176,8 +183,13 @@ class Simulation:
                     collision_possible = True
                 if a != b and id_collision not in checked_collisions and a.collide(b) and collision_possible:
                     collisions += 1
+                    collide = True
                     self.set_new_velocity(a, b)
                     checked_collisions.append(id_collision)
+                elif id_collision in checked_collisions:
+                    collide = True
+            if not collide: # if the blocks collide during this frame, we don't move it
+                a.move(self.time_speed_modifier)
         return collisions
 
     def set_new_velocity(self, a, b):
@@ -204,7 +216,7 @@ class Simulation:
             self.app.blit(block.img, block.rect)
         self.app.blit(self.text_info, (20, 10))
         if self.more_info_status:
-            text_time_speed_modifier = self.font.render("Time speed modifier : {}".format(round(self.time_speed_modifier, 2)), False, WHITE)
+            text_time_speed_modifier = self.font.render("Time speed modifier : {}".format(round(self.time_speed_modifier, 3)), False, WHITE)
             text_collision = self.font.render("Collisions counter : {}".format(self.collisions_counter), False, WHITE)
             text_time = self.font.render("Time : {}s".format(round(self.simulation_time, 2)), False, WHITE)
             self.app.blit(text_time_speed_modifier, (20, 40))
