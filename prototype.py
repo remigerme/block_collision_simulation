@@ -18,11 +18,6 @@ import math
 import pygame
 
 
-APP_WIDTH = 700
-APP_HEIGHT = 300
-
-FPS = 120 # higher FPS makes the program crashes
-
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -60,7 +55,7 @@ class Block:
     This class allows us to simply create and manage blocks.
     """
     ID = 0
-    def __init__(self, mass, x, vx, color = WHITE):
+    def __init__(self, mass, x, vx, APP_HEIGHT = 300, color = WHITE, FPS = 60):
         self.id = Block.ID
         Block.ID += 1
 
@@ -82,8 +77,8 @@ class Block:
         size = 10 + math.log(self.mass) * 2
         return size
 
-    def move(self):
-        self.x += self.vx * self.dt
+    def move(self, time_speed_modifier = 1):
+        self.x += self.vx * self.dt * time_speed_modifier
         self.distance_traveled += abs(self.vx * self.dt)
         self.rect = pygame.Rect((self.x, self.y), (self.size, self.size))
 
@@ -98,7 +93,7 @@ class Simulation:
         # basic properties
         self.APP_WIDTH = 700 # default value, can change
         self.APP_HEIGHT = 300 # default value, can change
-        self.FPS = 120 # default value, can change
+        self.FPS = 60 # default value, can change
 
         # physical objects
         self.wall_size = (10, 50) # can maybe change, don't know for the moment
@@ -107,13 +102,13 @@ class Simulation:
                     Wall((self.APP_WIDTH - self.wall_size[0], self.APP_HEIGHT - self.wall_size[1]), self.wall_size)
                     ]
         self.blocks = [
-                    Block(1, 100, 0), # can change all parameters ofc
-                    Block(100, 200, -30, GREEN)
+                    Block(1, 100, 0, self.APP_HEIGHT, FPS = self.FPS), # can change all parameters ofc
+                    Block(100, 200, -30, self.APP_HEIGHT, color = GREEN, FPS = self.FPS)
                     ]
 
         # more information
         self.simulation_time = 0
-        self.time_speed_modifier = 1 # default value, can change /!\ initialised but not used in this version of the code
+        self.time_speed_modifier = 1 # default value, can change
         self.collisions_counter = 0
         self.more_info_status = True
 
@@ -122,7 +117,7 @@ class Simulation:
         self.app = pygame.display.set_mode((self.APP_WIDTH, self.APP_HEIGHT))
         clock = pygame.time.Clock()
 
-        self.bg = pygame.Surface((APP_WIDTH, APP_HEIGHT))
+        self.bg = pygame.Surface((self.APP_WIDTH, self.APP_HEIGHT))
         self.bg.fill(BLACK)
         
         self.font = pygame.font.SysFont("dejavusans", 20)
@@ -151,17 +146,17 @@ class Simulation:
                         self.walls[1].status = not self.walls[1].status
 
             if not self.is_paused:
-                self.simulation_time += 1 / FPS
+                self.simulation_time += 1 / self.FPS * self.time_speed_modifier
                 self.collisions_counter += self.evolve()
                 self.draw()
-                clock.tick(FPS)
+                clock.tick(self.FPS)
                 pygame.display.update()
 
     def evolve(self):
         collisions = 0
         checked_collisions = []
         for block in self.blocks:
-            block.move()
+            block.move(self.time_speed_modifier)
             for wall in self.walls:
                 if wall.status:
                     if wall.collide(block):
