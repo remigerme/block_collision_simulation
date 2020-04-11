@@ -121,7 +121,7 @@ class Simulation:
         self.bg.fill(BLACK)
         
         self.font = pygame.font.SysFont("dejavusans", 20)
-        self.text_info = self.font.render("Escape : quit, space : paused, i : info, u / o : left/right walls", False, WHITE)
+        self.text_info = self.font.render("Esc:quit, space:paused, i:info, u/o:walls, l/r arrows:time speed", False, WHITE)
 
         self.is_paused = False
         self.is_running = True
@@ -144,6 +144,10 @@ class Simulation:
                         self.walls[0].status = not self.walls[0].status
                     if event.key == pygame.K_o:
                         self.walls[1].status = not self.walls[1].status
+                    if event.key == pygame.K_LEFT and self.time_speed_modifier > 0.1:
+                        self.time_speed_modifier -= 0.1
+                    if event.key == pygame.K_RIGHT:
+                        self.time_speed_modifier += 0.1
 
             if not self.is_paused:
                 self.simulation_time += 1 / self.FPS * self.time_speed_modifier
@@ -202,13 +206,15 @@ class Simulation:
             self.app.blit(block.img, block.rect)
         self.app.blit(self.text_info, (20, 10))
         if self.more_info_status:
+            text_time_speed_modifier = self.font.render("Time speed modifier : {}".format(round(self.time_speed_modifier, 2)), False, WHITE)
             text_collision = self.font.render("Collisions counter : {}".format(self.collisions_counter), False, WHITE)
             text_time = self.font.render("Time : {}s".format(round(self.simulation_time, 2)), False, WHITE)
-            self.app.blit(text_collision, (20, 40))
-            self.app.blit(text_time, (20, 70))
+            self.app.blit(text_time_speed_modifier, (20, 40))
+            self.app.blit(text_collision, (20, 70))
+            self.app.blit(text_time, (20, 100))
             for i, block in enumerate(self.blocks):
                 text_block = self.font.render("Block #{} : {}m and {}m/s".format(i + 1, int(block.x),round(block.vx, 2)), False, block.color)
-                self.app.blit(text_block, (20, 70 + 30 * (i + 1)))
+                self.app.blit(text_block, (20, 100 + 30 * (i + 1)))
 
 
 def main():
