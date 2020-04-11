@@ -11,6 +11,7 @@ We can :
     - activate / desactivate the side walls
     - make the two blocs collide each other, and know what their velocity and position will be
     - obviously count the number of collisions between the blocks, if only the left side wall is enabled
+    - change the time speed
 """
 
 
@@ -55,7 +56,7 @@ class Block:
     This class allows us to simply create and manage blocks.
     """
     ID = 0
-    def __init__(self, mass, x, vx, APP_HEIGHT = 300, color = WHITE, FPS = 60):
+    def __init__(self, mass, x, vx, FPS, APP_HEIGHT, color = WHITE):
         self.id = Block.ID
         Block.ID += 1
 
@@ -77,7 +78,7 @@ class Block:
         size = 10 + math.log(self.mass) * 2
         return size
 
-    def move(self, time_speed_modifier = 1):
+    def move(self, time_speed_modifier):
         self.x += self.vx * self.dt * time_speed_modifier
         self.distance_traveled += abs(self.vx * self.dt)
         self.rect = pygame.Rect((self.x, self.y), (self.size, self.size))
@@ -102,8 +103,8 @@ class Simulation:
                     Wall((self.APP_WIDTH - self.wall_size[0], self.APP_HEIGHT - self.wall_size[1]), self.wall_size)
                     ]
         self.blocks = [
-                    Block(1, 100, 0, self.APP_HEIGHT, FPS = self.FPS), # can change all parameters ofc
-                    Block(100, 200, -30, self.APP_HEIGHT, color = GREEN, FPS = self.FPS)
+                    Block(1, 100, 0, self.FPS, self.APP_HEIGHT), # can change all parameters ofc
+                    Block(100, 200, -30, self.FPS, self.APP_HEIGHT, color = GREEN)
                     ]
 
         # more information
@@ -159,20 +160,17 @@ class Simulation:
     def evolve(self):
         collisions = 0
         checked_collisions = []
-        for block in self.blocks:
-            block.move(self.time_speed_modifier)
+        for a in self.blocks:
+            a.move(self.time_speed_modifier)
             for wall in self.walls:
                 if wall.status:
-                    if wall.collide(block):
+                    if wall.collide(a):
                         collisions += 1
-                        block.vx *= -1
-            for other_block in self.blocks:
-                a = block
-                b = other_block
+                        a.vx *= -1
+            for b in self.blocks:
                 id_collision = (min(a.id, b.id), max(a.id, b.id))
                 # due to some technical limits, we need to check if the collision is realistic
                 # if we don't check, right after the blocks collide they will collide infinitely
-                # if you don't understand just don't care, but keep in mind it's necessary to check
                 collision_possible = False
                 if (a.x <= b.x and a.vx > b.vx) or (a.x >= b.x and a.vx < b.vx) : # in the three possible collision types (-> -> / -> <- / <- <-) the left block velocity is bigger than right's one
                     collision_possible = True
