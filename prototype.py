@@ -25,7 +25,9 @@ FPS = 120 # higher FPS makes the program crashes
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 
 
 class Wall:
@@ -91,128 +93,131 @@ class Block:
         return False
 
 
-def assign_new_velocity(a, b):
-    """
-    This is the most important function of the prototype, this is here that we use dynamics.
-    If you want to see the proof of these formulas, check the readme.
-    """
-    m = a.mass
-    M = b.mass
-    v_ra0 = a.vx
-    v_rb0 = b.vx
-    v_b0 = v_rb0 - v_ra0
-    v_ra1 = 2 * M / (M + m) * v_b0 + v_ra0
-    v_rb1 = (1 - 2 * m / (M + m)) * v_b0 + v_ra0
-    a.vx = v_ra1
-    b.vx = v_rb1
+class Simulation:
+    def __init__(self):
+        # basic properties
+        self.APP_WIDTH = 700 # default value, can change
+        self.APP_HEIGHT = 300 # default value, can change
+        self.FPS = 120 # default value, can change
 
+        # physical objects
+        self.wall_size = (10, 50) # can maybe change, don't know for the moment
+        self.walls = [
+                    Wall((0, self.APP_HEIGHT - self.wall_size[1]), self.wall_size),
+                    Wall((self.APP_WIDTH - self.wall_size[0], self.APP_HEIGHT - self.wall_size[1]), self.wall_size)
+                    ]
+        self.blocks = [
+                    Block(1, 100, 0), # can change all parameters ofc
+                    Block(100, 200, -30, GREEN)
+                    ]
 
-def evolve(walls, blocks):
-    collisions = 0
-    checked_collisions = []
-    for block in blocks:
-        block.move()
-        for wall in walls:
-            if wall.status:
-                if wall.collide(block):
-                    collisions += 1
-                    block.vx = -block.vx
-        for other_block in blocks:
-            if block.x <= other_block.x:
+        # more information
+        self.simulation_time = 0
+        self.time_speed_modifier = 1 # default value, can change /!\ initialised but not used in this version of the code
+        self.collisions_counter = 0
+        self.more_info_status = True
+
+    def run(self):
+        pygame.init()
+        self.app = pygame.display.set_mode((self.APP_WIDTH, self.APP_HEIGHT))
+        clock = pygame.time.Clock()
+
+        self.bg = pygame.Surface((APP_WIDTH, APP_HEIGHT))
+        self.bg.fill(BLACK)
+        
+        self.font = pygame.font.SysFont("dejavusans", 20)
+        self.text_info = self.font.render("Escape : quit, space : paused, i : info, u / o : left/right walls", False, WHITE)
+
+        self.is_paused = False
+        self.is_running = True
+        while self.is_running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.is_running = False
+                    pygame.quit()
+                    quit() # for now, but it could launch an output screen for example
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.is_running = False
+                        pygame.quit()
+                        quit() # look above
+                    if event.key == pygame.K_SPACE:
+                        self.is_paused = not self.is_paused
+                    if event.key == pygame.K_i:
+                        self.more_info_status = not self.more_info_status
+                    if event.key == pygame.K_u:
+                        self.walls[0].status = not self.walls[0].status
+                    if event.key == pygame.K_o:
+                        self.walls[1].status = not self.walls[1].status
+
+            if not self.is_paused:
+                self.simulation_time += 1 / FPS
+                self.collisions_counter += self.evolve()
+                self.draw()
+                clock.tick(FPS)
+                pygame.display.update()
+
+    def evolve(self):
+        collisions = 0
+        checked_collisions = []
+        for block in self.blocks:
+            block.move()
+            for wall in self.walls:
+                if wall.status:
+                    if wall.collide(block):
+                        collisions += 1
+                        block.vx *= -1
+            for other_block in self.blocks:
                 a = block
                 b = other_block
-            else:
-                a = other_block
-                b = block
-            id_collision = (min(a.id, b.id), max(a.id, b.id))
-            # due to some technical limits, we need to check if the collision is realistic
-            # if we don't check, right after the blocks collide they will collide infinitely
-            # if you don't understand just don't care, but keep in mind it's necessary to check
-            collision_possible = False
-            if a.vx > b.vx: # in the three possible collision types (-> -> / -> <- / <- <-) a's velocity is bigger than b's one
-                collision_possible = True
-            if other_block != block and id_collision not in checked_collisions and block.collide(other_block) and collision_possible:
-                collisions += 1
-                assign_new_velocity(a, b)
-                checked_collisions.append(id_collision)
-    return collisions
+                id_collision = (min(a.id, b.id), max(a.id, b.id))
+                # due to some technical limits, we need to check if the collision is realistic
+                # if we don't check, right after the blocks collide they will collide infinitely
+                # if you don't understand just don't care, but keep in mind it's necessary to check
+                collision_possible = False
+                if (a.x <= b.x and a.vx > b.vx) or (a.x >= b.x and a.vx < b.vx) : # in the three possible collision types (-> -> / -> <- / <- <-) the left block velocity is bigger than right's one
+                    collision_possible = True
+                if a != b and id_collision not in checked_collisions and a.collide(b) and collision_possible:
+                    collisions += 1
+                    self.set_new_velocity(a, b)
+                    checked_collisions.append(id_collision)
+        return collisions
 
+    def set_new_velocity(self, a, b):
+        """
+        This is the most important function of the prototype, this is here that we use dynamics.
+        If you want to see the proof of these formulas, check the readme.
+        """
+        m = a.mass
+        M = b.mass
+        v_ra0 = a.vx
+        v_rb0 = b.vx
+        v_b0 = v_rb0 - v_ra0
+        v_ra1 = 2 * M / (M + m) * v_b0 + v_ra0
+        v_rb1 = (1 - 2 * m / (M + m)) * v_b0 + v_ra0
+        a.vx = v_ra1
+        b.vx = v_rb1
 
-def draw(app, bg, walls, blocks, more_info, myfont):
-    app.blit(bg, (0, 0))
-    for wall in walls:
-        if wall.status:
-            app.blit(wall.img, wall.rect)
-    for block in blocks:
-        app.blit(block.img, block.rect)
-    app.blit(more_info["text_info"], (20, 10))
-    if more_info["status"]:
-        text_collision = myfont.render("Collisions counter : {}".format(more_info["collisions_counter"]), False, WHITE)
-        text_time = myfont.render("Time : {}s".format(round(more_info["simulation_time"], 2)), False, WHITE)
-        app.blit(text_collision, (20, 40))
-        app.blit(text_time, (20, 70))
-        for i, block in enumerate(blocks):
-            text_block = myfont.render("Block #{} : {}m and {}m/s".format(i + 1, int(block.x),round(block.vx, 2)), False, block.color)
-            app.blit(text_block, (20, 70 + 30 * (i + 1)))
+    def draw(self):
+        self.app.blit(self.bg, (0, 0))
+        for wall in self.walls:
+            if wall.status:
+                self.app.blit(wall.img, wall.rect)
+        for block in self.blocks:
+            self.app.blit(block.img, block.rect)
+        self.app.blit(self.text_info, (20, 10))
+        if self.more_info_status:
+            text_collision = self.font.render("Collisions counter : {}".format(self.collisions_counter), False, WHITE)
+            text_time = self.font.render("Time : {}s".format(round(self.simulation_time, 2)), False, WHITE)
+            self.app.blit(text_collision, (20, 40))
+            self.app.blit(text_time, (20, 70))
+            for i, block in enumerate(self.blocks):
+                text_block = self.font.render("Block #{} : {}m and {}m/s".format(i + 1, int(block.x),round(block.vx, 2)), False, block.color)
+                self.app.blit(text_block, (20, 70 + 30 * (i + 1)))
 
 
 def main():
-    pygame.init()
-    pygame.font.init()
-
-    app = pygame.display.set_mode((APP_WIDTH, APP_HEIGHT))
-    clock = pygame.time.Clock()
-    bg = pygame.Surface((APP_WIDTH, APP_HEIGHT))
-    bg.fill(BLACK)
-
-    wall_width = 10
-    wall_height = 50
-    walls = [Wall((0, APP_HEIGHT - wall_height), (wall_width, wall_height)),
-            Wall((APP_WIDTH - wall_width, APP_HEIGHT - wall_height), (wall_width, wall_height))]
-    blocks = [Block(100, 200, -30), Block(1, 100, 0, GREEN)]
-    
-    myfont = pygame.font.SysFont("dejavusans", 20)
-    text_info = myfont.render("Escape : quit, space : paused, i : info, u / o : left/right walls", False, WHITE)
-    simulation_time = 0
-    collisions_counter = 0
-    more_info = {
-                "status": True,
-                "simulation_time": simulation_time,
-                "collisions_counter":collisions_counter,
-                "text_info": text_info
-                }
-
-    paused = False
-    run = True
-    while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                pygame.quit()
-                quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    run = False
-                    pygame.quit()
-                    quit()
-                if event.key == pygame.K_SPACE:
-                    paused = not paused
-                if event.key == pygame.K_i:
-                    more_info["status"] = not more_info["status"]
-                if event.key == pygame.K_u:
-                    walls[0].status = not walls[0].status
-                if event.key == pygame.K_o:
-                    walls[1].status = not walls[1].status
-
-        if not paused:
-            simulation_time += 1 / FPS
-            collisions_counter += evolve(walls, blocks)
-            more_info["simulation_time"] = simulation_time
-            more_info["collisions_counter"] = collisions_counter
-            draw(app, bg, walls, blocks, more_info, myfont)
-            clock.tick(FPS)
-            pygame.display.update()
-
+    Simulation().run()
 
 if __name__ == "__main__":
     main()
