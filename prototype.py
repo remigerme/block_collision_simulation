@@ -171,6 +171,7 @@ class Simulation:
                 if wall.status:
                     if wall.collide(block):
                         collisions += 1
+                        collide = True
                         block.vx *= -1
             for other_block in self.blocks:
                 a = block
