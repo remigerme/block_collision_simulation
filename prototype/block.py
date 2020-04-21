@@ -8,7 +8,7 @@ class Block:
     This class allows us to simply create and manage blocks.
     """
     ID = 0
-    def __init__(self, mass, x, vx, FPS, APP_HEIGHT, color = WHITE):
+    def __init__(self, mass, x, vx, FPS, APP_HEIGHT, color = colors["white"]):
         self.id = Block.ID
         Block.ID += 1
 
