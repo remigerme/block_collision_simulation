@@ -1,0 +1,25 @@
+{
+	"window" : {
+		"width" : 700,
+		"height" : 300,
+		"fps" : 60
+	},
+	"walls" : {
+		"width": 10,
+		"height" : 50
+	},
+	"blocks" : [
+		{
+			"mass" : 1,
+			"x" : 100,
+			"vx": 0,
+			"color" : "white"
+		}, 
+		{
+			"mass" : 100,
+			"x" : 200,
+			"vx": -30,
+			"color" : "blue"
+		}
+	]
+}
