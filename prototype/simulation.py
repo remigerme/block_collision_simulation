@@ -5,22 +5,21 @@ from color import *
 
 
 class Simulation:
-    def __init__(self):
+    def __init__(self, settings):
         # basic properties
-        self.APP_WIDTH = 700 # default value, can change
-        self.APP_HEIGHT = 300 # default value, can change
-        self.FPS = 60 # default value, can change
+        self.APP_WIDTH = settings["window"]["width"]
+        self.APP_HEIGHT = settings["window"]["height"]
+        self.FPS = settings["window"]["fps"]
 
         # physical objects
-        self.wall_size = (10, 50) # can maybe change, don't know for the moment
+        self.wall_size = (settings["walls"]["width"], settings["walls"]["height"])
         self.walls = [
                     Wall((0, self.APP_HEIGHT - self.wall_size[1]), self.wall_size),
                     Wall((self.APP_WIDTH - self.wall_size[0], self.APP_HEIGHT - self.wall_size[1]), self.wall_size)
                     ]
-        self.blocks = [
-                    Block(1, 100, 0, self.FPS, self.APP_HEIGHT), # can change all parameters ofc
-                    Block(10000, 200, -30, self.FPS, self.APP_HEIGHT, color = GREEN)
-                    ]
+        self.blocks = []
+        for block in settings["blocks"]:
+            self.blocks.append(Block(block["mass"], block["x"], block["vx"], self.FPS, self.APP_HEIGHT, block["color"].upper()))
 
         # more information
         self.simulation_time = 0

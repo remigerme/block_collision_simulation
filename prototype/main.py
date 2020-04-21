@@ -1,8 +1,10 @@
 import simulation as simu
+import loadconfig
 
 
 def main():
-	simu.Simulation().run()
+	settings = loadconfig.get_config()
+	simu.Simulation(settings).run()
 
 
 if __name__ == "__main__":
